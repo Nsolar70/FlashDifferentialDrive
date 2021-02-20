@@ -10,7 +10,11 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatorCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import com.ctre.phoenix.sensors.PigeonIMU;
+
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -22,17 +26,20 @@ public class DriveTrain extends SubsystemBase {
   private final WPI_TalonFX m_backLeftMotor= new WPI_TalonFX(2);
   private final WPI_TalonFX m_frontRightMotor = new WPI_TalonFX(3);
   private final WPI_TalonFX m_backRightMotor = new WPI_TalonFX(4);
+  private final PigeonIMU m_gyro = new PigeonIMU(12);
 
    //Robots Drive Type: Differential Drive
   private final DifferentialDrive m_drive = new DifferentialDrive(m_frontLeftMotor, m_frontRightMotor);
-
+  
   // Default threshold value from XboxController
   private static double joyThreshold = 0.05;
 
   private  static final int kMaxNumberOfMotors = 4;
   private WPI_TalonFX[] m_TalonFXs = new WPI_TalonFX[kMaxNumberOfMotors];
+
+  double currentAngle;
   
-   
+ 
   /** Creates a new DriveTrain. */
   public DriveTrain() {
 
@@ -70,12 +77,23 @@ public class DriveTrain extends SubsystemBase {
 
   @Override
   public void periodic() {
+    //Get Pigeon status information from Pigeon API
+    PigeonIMU.GeneralStatus genStatus = new PigeonIMU.GeneralStatus();
+    PigeonIMU.FusionStatus fusionStatus = new PigeonIMU.FusionStatus();
+    m_gyro.getGeneralStatus(genStatus);
+    m_gyro.getFusedHeading(fusionStatus);
+    currentAngle = fusionStatus.heading;
 
     // Pushing Drive Encoder Data to the SmartDashboard
    SmartDashboard.putNumber(" FrontLeftSensorPosition", getLeftPosition());
    SmartDashboard.putNumber(" FrontRightSensorPosition", getRightPosition());
 
   }
+
+  //public Pose2d getPose() {
+   // return currentAngle.getPoseMeters();
+  //}
+  
     // This method will be called once per scheduler run
   /**
    * Drives the robot at given x, y and theta speeds. Speeds range from [-1, 1] and the linear
@@ -105,6 +123,19 @@ public class DriveTrain extends SubsystemBase {
    m_frontLeftMotor.set(ControlMode.PercentOutput, 0.0);
    m_frontRightMotor.set(ControlMode.PercentOutput, 0.0);
 
+  }
+  /**
+   * Controls the left and right sides of the drive directly with voltages.
+   *
+   * @param leftVolts  the commanded left output
+   * @param rightVolts the commanded right output
+   */
+  public void tankDriveVolts(double leftVolts, double rightVolts) {
+    SmartDashboard.putNumber("leftVolts", leftVolts);
+    SmartDashboard.putNumber("rightVolts", rightVolts);
+    m_frontLeftMotor.setVoltage(leftVolts);
+    m_frontRightMotor.setVoltage(rightVolts);
+    m_drive.feed();
   }
 
   /**
