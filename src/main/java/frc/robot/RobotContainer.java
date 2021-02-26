@@ -28,8 +28,8 @@ public class RobotContainer {
   public RobotContainer() {
 
     m_driveTrain.setDefaultCommand(new RunCommand(
-        () -> m_driveTrain.drive(m_driveController.getY(GenericHID.Hand.kRight),
-            m_driveController.getX(GenericHID.Hand.kRight)), m_driveTrain));
+        () -> m_driveTrain.drive(m_driveController.getX(GenericHID.Hand.kRight),
+            m_driveController.getY(GenericHID.Hand.kRight)), m_driveTrain));
             
     // Configure the button bindings
     configureButtonBindings();

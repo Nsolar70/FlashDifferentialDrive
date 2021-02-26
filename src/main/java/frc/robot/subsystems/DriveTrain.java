@@ -86,21 +86,18 @@ public class DriveTrain extends SubsystemBase {
    * 
    */
   
-  //Arcade Drive from Drive via XboxController input   
-  public void drive(double xSpeed, double ySpeed) {
-    m_drive.arcadeDrive(deadband(xSpeed), deadband(ySpeed), true);
-
-  }
-    
- private double deadband( double value){
-   if (Math.abs(value)>joyThreshold){
-     return value;
-   }
-   else {
-    return 0.0;
-   }
-
- }
+    //Arcade Drive from Drive via XboxController input   
+    public void drive(double xSpeed, double ySpeed) {
+  
+      if(Math.abs(xSpeed) > joyThreshold || Math.abs(ySpeed) > joyThreshold) {
+  
+        m_drive.arcadeDrive( xSpeed*1.0,  ySpeed*-1.0);
+      }
+      else {
+        m_drive.arcadeDrive(0.0, 0.0);
+      }
+  
+    }
  public void stopMotion(){
    m_frontLeftMotor.set(ControlMode.PercentOutput, 0.0);
    m_frontRightMotor.set(ControlMode.PercentOutput, 0.0);
